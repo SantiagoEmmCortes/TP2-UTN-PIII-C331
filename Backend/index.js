@@ -3,16 +3,12 @@ const app = express()
 const cors = require("cors")
 const dueñosRouter = require("./routes/dueñosRouter.js")
 const mascotasRouter = require("./routes/mascotasRouter.js")
-const db = require("./data/db.js")
+const db = require("./models/relaciones.js")
 
 app.use(cors())
 app.use(express.json()) 
 
 const port = 3030
-
-// app.get("/", (req, res) => {
-//     res.send("Pagina Principal")
-// })
 
 app.use("/duenos", dueñosRouter)
 app.use("/mascotas", mascotasRouter)

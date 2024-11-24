@@ -1,53 +1,91 @@
-const { UPDATE } = require("sequelize/lib/query-types")
-const dueñosModel = require("../models/dueñosModel.js")
+const { dueñosModel, mascotasModel } = require("../models/relaciones.js")
 
 const getDueños = async (req, res) => {
     try {
-        const dueños = await dueñosModel.findAll()
-        res.json(dueños)
+        const dueños = await dueñosModel.findAll();
+        res.status(200).json({
+            message: "Lista de dueños obtenida correctamente.",
+            data: dueños
+        });
     } catch (error) {
-        res.json({ message: error.message })
+        res.status(500).json({
+            message: "Error al obtener la lista de dueños.",
+            error: error.message
+        });
     }
 }
 
 const getDueñoPorId = async (req, res) => {
     try {
-        const dueño = await dueñosModel.findByPk(req.params.id)
-        res.json(dueño)
+        const dueño = await dueñosModel.findByPk(req.params.id);
+        if (!dueño) {
+            return res.status(404).json({ message: "Dueño no encontrado." });
+        }
+        res.status(200).json({
+            message: "Dueño encontrado.",
+            data: dueño
+        });
     } catch (error) {
-        res.json({ message: error.message })
+        res.status(500).json({
+            message: "Error al obtener el dueño.",
+            error: error.message
+        });
     }
 }
 
 const crearDueño = async (req, res) => {
     try {
-        await dueñosModel.create(req.body)
-        res.json("Dueño agregado correctamente");
+        const nuevoDueño = await dueñosModel.create(req.body);
+        res.status(201).json({
+            message: "Dueño creado correctamente.",
+            data: nuevoDueño
+        });
     } catch (error) {
-        res.json({ message: error.message })
+        res.status(400).json({
+            message: "Error al crear el dueño.",
+            error: error.message
+        });
     }
 }
 
 const borrarDueño = async (req, res) => {
     try {
-        await dueñosModel.destroy({
+        const tieneMascotas = await mascotasModel.findOne({ where: { dueñoId: req.params.id } });
+        if (tieneMascotas) {
+            return res.status(400).json({
+                message: "No se puede borrar el dueño porque tiene mascotas asociadas.",
+            });
+        }
+        const dueñoEliminado = await dueñosModel.destroy({
             where: { id: req.params.id }
-        })
-        res.json("Dueño Borrado Correctamente")
+        });
+        if (!dueñoEliminado) {
+            return res.status(404).json({ message: "Dueño no encontrado." });
+        }
+        res.status(200).json({ message: "Dueño borrado correctamente." });
     } catch (error) {
-        res.json({ message: error.message })
+        res.status(500).json({
+            message: "Error al borrar el dueño.",
+            error: error.message
+        });
     }
 }
 
 const actualizarDueño = async (req, res) => {
     try {
-        await dueñosModel.update(req.body, {
+        const dueñoActualizado = await dueñosModel.update(req.body, {
             where: { id: req.params.id }
-        })
-        res.json("Dueño Actualizado Correctamente")
+        });
+        if (!dueñoActualizado[0]) {
+            return res.status(404).json({ message: "Dueño no encontrado." });
+        }
+        res.status(200).json({ message: "Dueño actualizado correctamente." });
     } catch (error) {
-        res.json({ message: error.message })
+        res.status(400).json({
+            message: "Error al actualizar el dueño.",
+            error: error.message
+        });
     }
-}
+};
 
 module.exports = { getDueños, getDueñoPorId, crearDueño, borrarDueño, actualizarDueño }
