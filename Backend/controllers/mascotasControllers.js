@@ -2,20 +2,46 @@ const { mascotasModel, dueñosModel } = require("../models/relaciones.js")
 
 const getMascotas = async (req, res) => {
     try {
-        const mascotas = await mascotasModel.findAll({
+        const { page = 1, limit = 5, sort = 'ASC', type, status } = req.query;  // Valores predeterminados
+        const offset = (page - 1) * limit;
+
+        if (sort !== 'ASC' && sort !== 'DESC') {
+            return res.status(400).json({
+                message: "El parámetro 'sort' debe ser 'ASC' o 'DESC'."
+            });
+        }
+
+        const whereCondition = {};
+        if (type) {
+            whereCondition.tipoMascota = type;
+        }
+        if (status) {
+            whereCondition.estado = status;
+        }
+
+        const mascotas = await mascotasModel.findAndCountAll({
+            where: whereCondition,
+            limit: parseInt(limit),
+            offset: offset,
+            order: [['createdAt', sort]],
             include: {
                 model: dueñosModel,
-                attributes: ["nombre", "apellido"]
+                attributes: ["nombre", "apellido"],
             }
         });
+
         res.status(200).json({
             message: "Lista de mascotas obtenida correctamente.",
-            data: mascotas
+            total: mascotas.count,
+            page: parseInt(page),
+            totalPages: Math.ceil(mascotas.count / limit),
+            data: mascotas.rows,
         });
+
     } catch (error) {
         res.status(500).json({
-            message: "Error al obtener la lista de mascotas.",
-            error: error.message
+            message: "Error al obtener las mascotas.",
+            error: error.message,
         });
     }
 }
