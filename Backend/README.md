@@ -1,33 +1,29 @@
-json Dueños
+**Creacion de la Base de Datos para primer uso de la API:
 
-{
-    "nombre": "",
-    "apellido": "",
-    "telefono": "",
-    "email": ""
-}
-Ejemplo:
-{
-    "nombre": "Santiago",
-    "apellido": "Cortes",
-    "telefono": "1122334455",
-    "email": "santiagoemm.cortes@gmail.com"
-}
+CREATE SCHEMA `veterinaria_bd` DEFAULT CHARACTER SET utf8 ;
 
-json Mascotas
+USE `veterinaria_bd`;
 
-{
-    "nombre": "",
-    "tipoMascota": "",
-    "estado": "",
-    "nacimiento": "",
-    "dueñoId": 
-}
-Ejemplo:
-{
-    "nombre": "Igor",
-    "tipoMascota": "Gato",
-    "estado": "Active",
-    "nacimiento": "2019-01-02",
-    "dueñoId": 1
-}
+CREATE TABLE dueños (
+    id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    apellido VARCHAR(100) NOT NULL,
+    telefono VARCHAR(15) NULL,
+    email VARCHAR(100) NULL,
+    createdAt DATE NULL,
+    updatedAt DATE NULL
+);
+
+CREATE TABLE mascotas (    
+	id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    tipoMascota ENUM('Perro', 'Gato', 'Conejo', 'Ave', 'Otro') NOT NULL,
+    estado ENUM('Active', 'Inactive') NOT NULL,
+    nacimiento DATE NOT NULL,
+    dueñoId INT NOT NULL,
+    createdAt DATE NULL,
+    updatedAt DATE NULL,
+    FOREIGN KEY (dueñoId) REFERENCES dueños(id)
+);
+
+**Documentacion para el uso de la API disponible en http://localhost:3030/api-docs
